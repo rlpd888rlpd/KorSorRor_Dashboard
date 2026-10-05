@@ -1,0 +1,36 @@
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# Testing
+/coverage
+
+# Next.js build output
+/.next/
+/out/
+
+# Production
+/build
+
+# Misc & OS
+.DS_Store
+*.pem
+._*
+
+# Environment & Local Secrets
+.env
+.env*.local
+*.local
+google-credentials.json
+service-account.json
+credentials.json
+scripts/*.json
+data/
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
