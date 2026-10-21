@@ -1,38 +1,5 @@
 export type RegistrationType = 'DUAL' | 'GOVERNMENT' | 'PUBLIC' | 'UNREGISTERED';
 
-export interface MediatorItem {
-  id: string;
-  key_mediator: string;
-  title: string | null;
-  first_name: string;
-  last_name: string;
-  full_name: string;
-  gender: string | null;
-  phone: string | null;
-  email: string | null;
-  photo_url: string | null;
-  province: string | null;
-  district: string | null;
-  subdistrict: string | null;
-  social_position: string | null;
-  mediation_experience: string | null;
-  masked_citizen_id: string;
-  registration_type: RegistrationType;
-  key_gov: string | null;
-  gov_status: string | null;
-  gov_reg_no: string | null;
-  gov_effective_date: string | null;
-  gov_expiration_date: string | null;
-  is_gov_active: boolean | null;
-  key_public: string | null;
-  public_status: string | null;
-  public_reg_no: string | null;
-  public_effective_date: string | null;
-  public_expiration_date: string | null;
-  is_public_active: boolean | null;
-  is_active_overall: boolean;
-}
-
 export interface MediatorKPISummary {
   total: number;
   dualCount: number;
@@ -41,14 +8,50 @@ export interface MediatorKPISummary {
   unregisteredCount: number;
   activeCount: number;
   inactiveCount: number;
+  activeRate: number;
+  provinceCoverage: number;
 }
 
-export interface MediatorFilters {
-  search?: string;
-  province?: string;
-  type?: string;
-  status?: string;
-  gender?: string;
-  page?: number;
-  pageSize?: number;
+export interface YearTrendItem {
+  year: string;
+  registrations: number;
+  cumulative: number;
+}
+
+export interface ExpiryForecastItem {
+  year: string;
+  expiringCount: number;
+}
+
+export interface RegionStatItem {
+  region: string;
+  total: number;
+  active: number;
+}
+
+export interface ProvinceStatItem {
+  province: string;
+  region: string;
+  total: number;
+  govCount: number;
+  publicCount: number;
+  activeCount: number;
+  expiredCount: number;
+  activeRate: number;
+}
+
+export interface GenderRatioItem {
+  name: string;
+  value: number;
+  color: string;
+}
+
+export interface ExecutiveStatsResponse {
+  kpis: MediatorKPISummary;
+  yearTrends: YearTrendItem[];
+  expiryForecasts: ExpiryForecastItem[];
+  topProvinces: ProvinceStatItem[];
+  regionalStats: RegionStatItem[];
+  allProvinces: ProvinceStatItem[];
+  genderRatios: GenderRatioItem[];
 }
