@@ -43,13 +43,19 @@ export async function getGoogleAccessToken(): Promise<string> {
     iat: now,
   };
 
-  const b64 = (s: string) => Buffer.from(s).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const b64 = (s: string | Buffer) =>
+    (Buffer.isBuffer(s) ? s : Buffer.from(s))
+      .toString('base64')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+
   const unsigned = `${b64(JSON.stringify(header))}.${b64(JSON.stringify(claim))}`;
   const signer = crypto.createSign('RSA-SHA256');
   signer.update(unsigned);
   signer.end();
   const signature = signer.sign(creds.private_key);
-  const jwt = `${unsigned}.${b64(signature.toString('base64'))}`;
+  const jwt = `${unsigned}.${b64(signature)}`;
 
   const res = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
