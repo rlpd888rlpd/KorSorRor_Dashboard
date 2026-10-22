@@ -36,3 +36,27 @@ export async function upsertSupabaseBatch<T extends Record<string, unknown>>(
 
   return records.length;
 }
+
+export async function getValidMediatorKeys(): Promise<Set<string>> {
+  const pages = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  const promises = pages.map(async page => {
+    const from = page * 1000;
+    const to = from + 999;
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/mediators?select=key_mediator`, {
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        Range: `${from}-${to}`,
+      },
+    });
+    if (!res.ok) return [];
+    return (await res.json()) as { key_mediator?: string }[];
+  });
+
+  const results = await Promise.all(promises);
+  const validKeys = new Set<string>();
+  results.flat().forEach(r => {
+    if (r && r.key_mediator) validKeys.add(r.key_mediator.trim());
+  });
+  return validKeys;
+}

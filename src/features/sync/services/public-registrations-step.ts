@@ -1,12 +1,15 @@
 import { fetchSheetValues } from '@/lib/google-sheets/sheet-fetcher';
 import { parseThaiDate } from '@/lib/google-sheets/date-parser';
-import { upsertSupabaseBatch } from '@/lib/supabase/upsert';
+import { upsertSupabaseBatch, getValidMediatorKeys } from '@/lib/supabase/upsert';
 
 const SPREADSHEET_ID = '1ymV56b-tomPpF6mH0mqKWVGyphmoDzVZC36GPX6nX7A';
 const TAB_NAME = 'ทะเบียนปชช.';
 
 export async function syncPublicRegistrationsTable(token: string): Promise<number> {
-  const rows = await fetchSheetValues(SPREADSHEET_ID, TAB_NAME, token);
+  const [rows, validKeys] = await Promise.all([
+    fetchSheetValues(SPREADSHEET_ID, TAB_NAME, token),
+    getValidMediatorKeys(),
+  ]);
   if (rows.length < 2) return 0;
 
   const headers = rows[0].map(h => String(h || '').trim());
@@ -18,7 +21,7 @@ export async function syncPublicRegistrationsTable(token: string): Promise<numbe
     const row = rows[r];
     const keyPub = String(row[hMap['key_ทะเบียนปชช.']] || '').trim();
     const keyMed = String(row[hMap['key_ผกก.']] || '').trim();
-    if (!keyPub || !keyMed) continue;
+    if (!keyPub || !keyMed || !validKeys.has(keyMed)) continue;
 
     const effRaw = String(row[hMap['มีผลปชช.']] || '').trim();
     const expRaw = String(row[hMap['หมดอายุปชช.']] || '').trim();
