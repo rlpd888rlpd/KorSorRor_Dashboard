@@ -11,7 +11,10 @@ export function getServiceAccountCreds(): ServiceAccountCreds {
   // 1. Check environment variable (Vercel production)
   if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
     try {
-      const raw = process.env.GOOGLE_SERVICE_ACCOUNT_KEY.trim();
+      let raw = process.env.GOOGLE_SERVICE_ACCOUNT_KEY.trim();
+      if ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'"))) {
+        raw = raw.slice(1, -1);
+      }
       const jsonStr = raw.startsWith('{') ? raw : Buffer.from(raw, 'base64').toString('utf8');
       return JSON.parse(jsonStr);
     } catch (e) {
