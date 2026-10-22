@@ -1,36 +1,38 @@
 import { createClient } from '@/lib/supabase/client';
-import { ExecutiveStatsResponse, ProvinceStatItem, RegionStatItem, YearTrendItem, ExpiryForecastItem, GenderRatioItem } from '../types';
+import { REGION_MAP } from '../constants';
+import { ExecutiveStatsResponse, ProvinceStatItem, RegionStatItem, YearTrendItem, ExpiryForecastItem } from '../types';
 
-const REGION_MAP: Record<string, string> = {
-  'เชียงใหม่': 'ภาคเหนือ', 'เชียงราย': 'ภาคเหนือ', 'ลำปาง': 'ภาคเหนือ', 'ลำพูน': 'ภาคเหนือ',
-  'แม่ฮ่องสอน': 'ภาคเหนือ', 'น่าน': 'ภาคเหนือ', 'พะเยา': 'ภาคเหนือ', 'แพร่': 'ภาคเหนือ', 'อุตรดิตถ์': 'ภาคเหนือ',
-  'กรุงเทพมหานคร': 'ภาคกลาง', 'นนทบุรี': 'ภาคกลาง', 'ปทุมธานี': 'ภาคกลาง', 'สมุทรปราการ': 'ภาคกลาง',
-  'สมุทรสาคร': 'ภาคกลาง', 'สมุทรสงคราม': 'ภาคกลาง', 'พระนครศรีอยุธยา': 'ภาคกลาง', 'อ่างทอง': 'ภาคกลาง',
-  'ลพบุรี': 'ภาคกลาง', 'สิงห์บุรี': 'ภาคกลาง', 'ชัยนาท': 'ภาคกลาง', 'สระบุรี': 'ภาคกลาง', 'นครนายก': 'ภาคกลาง',
-  'นครปฐม': 'ภาคกลาง', 'สุพรรณบุรี': 'ภาคกลาง',
-  'นครราชสีมา': 'ภาคอีสาน', 'ขอนแก่น': 'ภาคอีสาน', 'อุบลราชธานี': 'ภาคอีสาน', 'อุดรธานี': 'ภาคอีสาน',
-  'บุรีรัมย์': 'ภาคอีสาน', 'สุรินทร์': 'ภาคอีสาน', 'ศรีสะเกษ': 'ภาคอีสาน', 'ร้อยเอ็ด': 'ภาคอีสาน',
-  'มหาสารคาม': 'ภาคอีสาน', 'ชัยภูมิ': 'ภาคอีสาน', 'สกลนคร': 'ภาคอีสาน', 'กาฬสินธุ์': 'ภาคอีสาน',
-  'ยโสธร': 'ภาคอีสาน', 'นครพนม': 'ภาคอีสาน', 'มุกดาหาร': 'ภาคอีสาน', 'หนองบัวลำภู': 'ภาคอีสาน',
-  'หนองคาย': 'ภาคอีสาน', 'อำนาจเจริญ': 'ภาคอีสาน', 'เลย': 'ภาคอีสาน', 'บึงกาฬ': 'ภาคอีสาน',
-  'สงขลา': 'ภาคใต้', 'นครศรีธรรมราช': 'ภาคใต้', 'สุราษฎร์ธานี': 'ภาคใต้', 'ภูเก็ต': 'ภาคใต้',
-  'กระบี่': 'ภาคใต้', 'พังงา': 'ภาคใต้', 'ตรัง': 'ภาคใต้', 'พัทลุง': 'ภาคใต้', 'ชุมพร': 'ภาคใต้',
-  'ระนอง': 'ภาคใต้', 'สตูล': 'ภาคใต้', 'ปัตตานี': 'ภาคใต้', 'ยะลา': 'ภาคใต้', 'นราธิวาส': 'ภาคใต้',
-  'ชลบุรี': 'ภาคตะวันออก', 'ระยอง': 'ภาคตะวันออก', 'จันทบุรี': 'ภาคตะวันออก', 'ตราด': 'ภาคตะวันออก',
-  'ฉะเชิงเทรา': 'ภาคตะวันออก', 'ปราจีนบุรี': 'ภาคตะวันออก', 'สระแก้ว': 'ภาคตะวันออก',
-  'กาญจนบุรี': 'ภาคตะวันตก', 'ราชบุรี': 'ภาคตะวันตก', 'เพชรบุรี': 'ภาคตะวันตก', 'ประจวบคีรีขันธ์': 'ภาคตะวันตก', 'ตาก': 'ภาคตะวันตก'
-};
+async function fetchAllPaged<T>(
+  query: (from: number, to: number) => PromiseLike<{ data: T[] | null }>,
+  pageCount: number
+): Promise<T[]> {
+  const pages = Array.from({ length: pageCount }, (_, i) => i);
+  const results = await Promise.all(
+    pages.map(async p => {
+      const res = await query(p * 1000, p * 1000 + 999);
+      return res.data || [];
+    })
+  );
+  return results.flat();
+}
 
 export async function getExecutiveStatisticalData(): Promise<ExecutiveStatsResponse> {
   const supabase = createClient();
   try {
-    const [viewRes, govRes] = await Promise.all([
-      supabase.from('v_mediators_dashboard').select('province, registration_type, is_active_overall, gender').limit(10000),
-      supabase.from('mediator_gov_registrations').select('registration_year, expiration_date').limit(10000)
+    const [items, govItems] = await Promise.all([
+      fetchAllPaged(
+        (from, to) => supabase.from('v_mediators_dashboard')
+          .select('province, registration_type, is_active_overall, gender')
+          .range(from, to),
+        9
+      ),
+      fetchAllPaged(
+        (from, to) => supabase.from('mediator_gov_registrations')
+          .select('registration_year, expiration_date')
+          .range(from, to),
+        11
+      ),
     ]);
-
-    const items = viewRes.data || [];
-    const govItems = govRes.data || [];
 
     let dualCount = 0, govCount = 0, publicCount = 0, unregisteredCount = 0;
     let activeCount = 0, inactiveCount = 0;
@@ -69,7 +71,6 @@ export async function getExecutiveStatisticalData(): Promise<ExecutiveStatsRespo
       if (r.is_active_overall) regionAgg[reg].active++;
     }
 
-    // Expiry Forecast
     const expMap: Record<string, number> = {};
     for (const g of govItems) {
       if (g.expiration_date) {
@@ -79,7 +80,6 @@ export async function getExecutiveStatisticalData(): Promise<ExecutiveStatsRespo
     }
     const expiryForecasts: ExpiryForecastItem[] = Object.keys(expMap).sort().map(y => ({ year: 'พ.ศ. ' + y, expiringCount: expMap[y] }));
 
-    // Year Trends
     const yearMap: Record<string, number> = {};
     for (const g of govItems) {
       const y = (g.registration_year || '').trim();
