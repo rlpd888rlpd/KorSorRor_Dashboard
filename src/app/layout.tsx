@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Scale, Users, GraduationCap, Building2, Wallet } from 'lucide-react';
+import { Scale } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'ระบบติดตามสถิติ | กองส่งเสริมการระงับข้อพิพาท กรมคุ้มครองสิทธิและเสรีภาพ',
@@ -29,24 +29,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </div>
               </div>
 
-              {/* Navigation Tabs (5 Core Modules) */}
-              <nav className="hidden md:flex items-center gap-1">
-                <span className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200">
-                  <Users className="w-4 h-4" /> ทะเบียนผู้ไกล่เกลี่ย
+              {/* Executive System Badge */}
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-800 border border-sky-200">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  ระบบสถิติอัจฉริยะ (Live)
                 </span>
-                <span className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-600 cursor-not-allowed">
-                  <Scale className="w-4 h-4" /> สถิติการไกล่เกลี่ย
-                </span>
-                <span className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-600 cursor-not-allowed">
-                  <GraduationCap className="w-4 h-4" /> หลักสูตรฝึกอบรม
-                </span>
-                <span className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-600 cursor-not-allowed">
-                  <Building2 className="w-4 h-4" /> ศูนย์ไกล่เกลี่ยฯ
-                </span>
-                <span className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-600 cursor-not-allowed">
-                  <Wallet className="w-4 h-4" /> งบประมาณ
-                </span>
-              </nav>
+              </div>
             </div>
           </div>
         </header>
